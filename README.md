@@ -45,12 +45,27 @@ class User extends Model
 ```
 
 ## Add Blog Friends to a User
-Blog Friends limits who can see a User's blog posts
+The getBlogFriends() method allows for limiting who can see a User's blog posts.
+
+The Skybluesofa\Microblog\Model\Traits\MicroblogFriends Trait enforces that this method exists on the User model, but does not implement it. You'll need to do that however you see fit. Below is an example:
 ```php
-use Skybluesofa\Microblog\Model\Traits\MicroblogAuthor;
+use Skybluesofa\Microblog\Model\Traits\MicroblogFriends;
 class User extends Model
 {
-    use MicroblogAuthor;
+    use MicroblogFriends;
+    
+    ...
+    public function getBlogFriends()
+    {
+        // Return null to get all users
+        return null;
+    
+        // Return an array to get specific user ids
+        // return [1,2,3];
+    
+        // Return an empty array to get no user ids (no one else)
+        //return [];
+    }
     ...
 }
 ```
@@ -61,6 +76,7 @@ class User extends Model
 ### Blog posts
 
 #### Create a blog post
+The savePost() method will create the associated Journal model, if it doesn't exist for the User.
 ```php
 $post = new Post;
 $post->content = 'This is the story of my life';
