@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="Unit Tests">
+            <file>./tests/Unit/MicroblogJournalTest.php</file>
+            <file>./tests/Unit/MicroblogPostBasicTest.php</file>
+            <file>./tests/Unit/MicroblogPostFriendsTest.php</file>
+            <file>./tests/Unit/MicroblogPostUniversalTest.php</file>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_DRIVER" value="sync"/>
+    </php>
+    <logging>
+        <log types="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
+</phpunit>
