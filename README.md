@@ -56,7 +56,7 @@ class User extends Model
 ```
 
 ## How to use
-[Check the Test file to see the package in action](https://github.com/skybluesofa/laravel-microblog/blob/master/tests/MicroblogPostTest.php)
+[Check the Test file to see the package in action](https://github.com/skybluesofa/laravel-microblog/blob/master/tests/Unit/MicroblogPostBasicTest.php)
 
 ### Blog posts
 
