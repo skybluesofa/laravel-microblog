@@ -17,13 +17,19 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_CONNECTION" value="testing"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
     </php>
     <logging>
-        <log types="coverage-clover" target="build/logs/clover.xml"/>
+        <log type="coverage-html" target="./log/codeCoverage" lowUpperBound="50" highLowerBound="80" />
     </logging>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./src</directory>
+        </whitelist>
+    </filter>    
 </phpunit>

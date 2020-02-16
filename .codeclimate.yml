@@ -1,0 +1,20 @@
+JavaScript: true
+PHP: true
+
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - php
+  fixme:
+    enabled: true
+  phpmd:
+    enabled: true
+ratings:
+  paths:
+  - "**.inc"
+  - "**.php"
+exclude_paths:
+  - tests/
+  - vendor/
