@@ -4,6 +4,7 @@ use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\Journal;
 use App\User;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
+use Skybluesofa\Microblog\Visibility;
 
 class MicroblogJournalTest extends TestCase
 {
@@ -14,7 +15,7 @@ class MicroblogJournalTest extends TestCase
         $user = factory(User::class)->create();
         $this->be($user);
 
-        Journal::getOrCreate($user);
+        Journal::forUser($user);
 
         $this->assertCount(1, Journal::where('user_id', $user->id)->pluck('id'));
     }
@@ -40,5 +41,37 @@ class MicroblogJournalTest extends TestCase
                 ->withoutGlobalScopes()
                 ->pluck('id')
         );
+    }
+
+    public function test_journal_visibility()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $journal = Journal::forUser($user);
+        $this->assertSame(Visibility::SHARED, $journal->visibility);
+
+        $journal->hide();
+        $this->assertSame(Visibility::PERSONAL, $journal->visibility);
+
+        $journal->shareWithFriends();
+        $this->assertSame(Visibility::SHARED, $journal->visibility);
+
+        $journal->shareWithEveryone();
+        $this->assertSame(Visibility::UNIVERSAL, $journal->visibility);
+    }
+
+    public function test_journal_belongs_to_current_user()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $journal = Journal::forUser($user);
+        $this->assertTrue($journal->belongsToCurrentUser());
+
+        $user2 = factory(User::class)->create();
+        $this->be($user2);
+
+        $this->assertFalse($journal->belongsToCurrentUser());
     }
 }

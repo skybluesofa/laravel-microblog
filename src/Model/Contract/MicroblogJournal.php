@@ -32,9 +32,9 @@ class MicroblogJournal extends Model
         return $this->hasMany(Post::class)->orderBy('available_on');
     }
 
-    public static function forUser(Model $user) : ?MicroblogJournal
+    public static function forUser(Model $user) : MicroblogJournal
     {
-        return MicroblogJournal::where('user_id', $user->id);
+        return static::getOrCreate($user);
     }
 
     public static function getOrCreate(Model $user) : MicroblogJournal
@@ -123,7 +123,7 @@ class MicroblogJournal extends Model
 
             $model->attributes['visibility'] = isset($model->attributes['visibility'])
                 ? $model->attributes['visibility']
-                : Visibility::UNIVERSAL;
+                : Visibility::SHARED;
         }, 0);
 
         static::addGlobalScope(new JournalPrivacyScope);
