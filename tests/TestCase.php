@@ -1,7 +1,10 @@
 <?php
 
-abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
+use Illuminate\Database\Eloquent\Factory;
+
+abstract class TestCase extends Orchestra\Testbench\TestCase
 {
+
     /**
      * The base URL to use while testing the application.
      *
@@ -10,52 +13,37 @@ abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
     protected $baseUrl = 'http://localhost';
 
     /**
-     * Creates the application.
+     * Define environment setup.
      *
-     * @return \Illuminate\Foundation\Application
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return void
      */
-    public function createApplication()
+    protected function getEnvironmentSetUp($app)
     {
-        $app = require __DIR__.'/../vendor/laravel/laravel/bootstrap/app.php';
+        $app->make(Factory::class)->load(__DIR__.'/../src/database/factories');
 
-        $app->register('Skybluesofa\Microblog\ServiceProvider');
+        $app['config']->set('database.default', 'testbench');
+        $app['config']->set('database.connections.testbench', [
+            'driver'   => 'sqlite',
+            'database' => ':memory:',
+            'prefix'   => '',
+        ]);
 
-        $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        require_once(__DIR__.'/stubs/Stub_User.php');
-
-        $app->make(\Illuminate\Database\Eloquent\Factory::class)->load(__DIR__.'/../src/database/factories');
-
-        return $app;
+        $app['config']->set('microblog.tables.microblog_posts', 'microblog_posts');
+        $app['config']->set('microblog.tables.microblog_journals', 'microblog_journals');
     }
 
     /**
      * Setup DB before each test.
      */
-    public function setUp()
+    public function setUp() : void
     {
         parent::setUp();
 
-        $this->migrate();
+        require_once(__DIR__.'/stubs/Stub_User.php');
+
+        $this->loadLaravelMigrations();
+        $this->loadMigrationsFrom(__DIR__ . '/../src/database/migrations');
+        $this->withFactories(__DIR__.'/../src/database/factories');
     }
-
-    /**
-     * run package database migrations.
-     */
-    public function migrate()
-    {
-        $this->app['config']->set('microblog.tables.microblog_journals', 'microblog_journals');
-        $this->app['config']->set('microblog.tables.microblog_posts', 'microblog_posts');
-
-        $fileSystem = new Illuminate\Filesystem\Filesystem();
-        $classFinder = new Illuminate\Filesystem\ClassFinder();
-
-        foreach ($fileSystem->files(__DIR__.'/../src/database/migrations') as $file) {
-            $fileSystem->requireOnce($file);
-            $migrationClass = $classFinder->findClass($file);
-
-            (new $migrationClass())->up();
-        }
-    }
-
 }

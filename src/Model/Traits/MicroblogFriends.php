@@ -18,5 +18,7 @@ trait MicroblogFriends
 
     // Return an empty array to get no user ids
     //return [];
-    abstract function getBlogFriends();
+    abstract public function getBlogFriends() : ?Array;
+
+    abstract public function setBlogFriends(?Array $blogFriends) : self;
 }

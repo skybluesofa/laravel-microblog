@@ -1,15 +1,18 @@
 <?php
 namespace App;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Skybluesofa\Microblog\Model\User as MicroblogUser;
 use Skybluesofa\Microblog\Model\Traits\MicroblogFriends;
 use Skybluesofa\Microblog\Model\Traits\MicroblogAuthor;
 
-class User extends Authenticatable
+class User extends MicroblogUser
 {
     use MicroblogFriends, MicroblogAuthor;
 
-    public function getBlogFriends()
+    /** @var Array|null */
+    protected $friendIds = null;
+
+    public function getBlogFriends() : ?Array
     {
         // Return null to get all users or an array to get only those users
         return $this->friendIds;
@@ -19,8 +22,8 @@ class User extends Authenticatable
     // one way that you can set the value returned by the User->getBlogFriends() method.
     // Other ways would be to call a method on another class, hardcode the value into
     // the method, or use a trait to override the UserContract::getBlogFriends() method.
-    protected $friendIds = null;
-    public function setBlogFriends($friendIds = null) {
+    public function setBlogFriends(?Array $friendIds = null)
+    {
         $this->friendIds = $friendIds;
     }
 }

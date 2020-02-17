@@ -1,14 +1,13 @@
 <?php
 namespace Skybluesofa\Microblog\Model\Contract;
 
-use Skybluesofa\Microblog\Status;
 use Skybluesofa\Microblog\Visibility;
+use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
 use Skybluesofa\Microblog\Model\Scope\Journal\PrivacyScope as JournalPrivacyScope;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
-use Carbon\Carbon;
 use Webpatser\Uuid\Uuid;
-use Auth;
+use Skybluesofa\Microblog\Model\User;
+use Skybluesofa\Microblog\Model\Post;
 
 /**
  * Class MicroblogJournal
@@ -16,58 +15,77 @@ use Auth;
  */
 class MicroblogJournal extends Model
 {
+    use MicroblogCurrentUser;
+
     /**
      * @var array
      */
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    public function user() {
-        return $this->belongsTo('App\User');
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
-    public function posts() {
-        return $this->hasMany('Skybluesofa\Microblog\Model\Post');
+    public function posts()
+    {
+        return $this->hasMany(Post::class)->orderBy('available_on');
     }
 
-    public static function forUser(Model $user) {
-        return MicroblogJournal::where('user_id', $user->id);
+    public static function forUser(Model $user) : MicroblogJournal
+    {
+        return static::getOrCreate($user);
     }
 
-    public static function getOrCreate(Model $user) {
-        $microblogJournal = MicroblogJournal::withoutGlobalScope(JournalPrivacyScope::class)->where('user_id', $user->id);
+    public static function getOrCreate(Model $user) : MicroblogJournal
+    {
+        $microblogJournal = MicroblogJournal::withoutGlobalScope(JournalPrivacyScope::class)
+            ->where('user_id', $user->id);
+
         if (!$microblogJournal->count()) {
             $microblogJournal = new MicroblogJournal;
             $microblogJournal->user_id = $user->id;
             $microblogJournal->save();
         } else {
-            $microblogJournal = $microblogJournal->get();
+            $microblogJournal = $microblogJournal->get()->first();
         };
+
         return $microblogJournal;
     }
 
-    public function hide() {
+    public function hide() : self
+    {
         if ($this->belongsToCurrentUser()) {
             $this->visibility = Visibility::PERSONAL;
             $this->save();
         }
+
+        return $this;
     }
 
-    public function shareWithFriends() {
+    public function shareWithFriends() : self
+    {
         if ($this->belongsToCurrentUser()) {
             $this->visibility = Visibility::SHARED;
             $this->save();
         }
+
+        return $this;
     }
 
-    public function shareWithEveryone() {
+    public function shareWithEveryone() : self
+    {
         if ($this->belongsToCurrentUser()) {
             $this->visibility = Visibility::UNIVERSAL;
             $this->save();
         }
+
+        return $this;
     }
 
-    public function belongsToCurrentUser() {
-        return $this->user_id == Auth::user()->id;
+    public function belongsToCurrentUser() : bool
+    {
+        return $this->user_id == $this->currentUser()->id;
     }
 
     /**
@@ -81,7 +99,7 @@ class MicroblogJournal extends Model
         parent::__construct($attributes);
     }
 
-    public function getIncrementing()
+    public function getIncrementing() : bool
     {
         // We use a UUID, so the model key is not going to increment automatically
         return false;
@@ -91,7 +109,7 @@ class MicroblogJournal extends Model
      * This function overwrites the default boot static method of Eloquent models. It will hook
      * the creation event with a simple closure to insert the UUID
      */
-    public static function boot()
+    public static function boot() : void
     {
         parent::boot();
 
@@ -103,7 +121,9 @@ class MicroblogJournal extends Model
             $uuid = Uuid::generate($uuidVersion);
             $model->attributes[$model->getKeyName()] = $uuid->string;
 
-            $model->attributes['visibility'] = isset($model->attributes['visibility']) ? $model->attributes['visibility'] : Visibility::UNIVERSAL;
+            $model->attributes['visibility'] = isset($model->attributes['visibility'])
+                ? $model->attributes['visibility']
+                : Visibility::SHARED;
         }, 0);
 
         static::addGlobalScope(new JournalPrivacyScope);

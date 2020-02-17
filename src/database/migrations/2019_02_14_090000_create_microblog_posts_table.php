@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
@@ -8,11 +9,9 @@ use Illuminate\Database\Migrations\Migration;
  */
 class CreateMicroblogPostsTable extends Migration
 {
-
-    public function up() {
-
+    public function up()
+    {
         Schema::create(config('microblog.tables.microblog_posts'), function (Blueprint $table) {
-
             $table->uuid('id');
             $table->uuid('journal_id');
             $table->integer('user_id')->nullable();
@@ -23,11 +22,10 @@ class CreateMicroblogPostsTable extends Migration
             $table->timestamp('available_on')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamps();
         });
-
     }
 
-    public function down() {
+    public function down()
+    {
         Schema::dropIfExists(config('microblog.tables.microblog_posts'));
     }
-
 }
