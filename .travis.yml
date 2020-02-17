@@ -28,14 +28,6 @@ install:
 
 before_script:
   - mysql -e 'create database microblog_test;'
-#  - pwd
-#  - cp src/database/migrations/2019_02_14_090000_create_microblog_journals_table.php vendor/laravel/laravel/database/migrations/2019_02_14_090000_create_microblog_journals_table.php
-#  - cp src/database/migrations/2019_02_14_090000_create_microblog_posts_table.php vendor/laravel/laravel/database/migrations/2019_02_14_090000_create_microblog_posts_table.php
-#  - yes | cp tests/config/friendships.php vendor/laravel/laravel/config/microblog.php
-#  - cd vendor/laravel/laravel
-#  - composer update --dev --prefer-source --no-interaction
-#  - php artisan migrate
-#  - cd -
 
 script:
   - vendor/bin/phpunit
