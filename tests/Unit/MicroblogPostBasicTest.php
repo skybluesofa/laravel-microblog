@@ -41,13 +41,13 @@ class MicroblogPostBasicTest extends TestCase
         $post = factory(Post::class)->make();
         $user->savePost($post);
 
-        $post->publish();
+        $this->assertInstanceOf(Post::class, $post->publish());
         $this->assertEquals(Status::PUBLISHED, $post->status);
 
-        $post->unpublish();
+        $this->assertInstanceOf(Post::class, $post->unPublish());
         $this->assertEquals(Status::DRAFT, $post->status);
 
-        $post->publish();
+        $this->assertInstanceOf(Post::class, $post->publish());
         $this->assertEquals(Status::PUBLISHED, $post->status);
     }
 
@@ -59,8 +59,7 @@ class MicroblogPostBasicTest extends TestCase
         $post = factory(Post::class)->make();
         $user->savePost($post);
 
-        $post->hide();
-
+        $this->assertInstanceOf(Post::class, $post->hide());
         $this->assertEquals(Visibility::PERSONAL, $post->visibility);
     }
 
@@ -97,8 +96,7 @@ class MicroblogPostBasicTest extends TestCase
         $post = factory(Post::class)->make();
         $user->savePost($post);
 
-        $post->unpublish();
-
+        $this->assertInstanceOf(Post::class, $post->unPublish());
         $this->assertEquals(Status::DRAFT, $post->status);
 
         $user2 = factory(User::class)->create();
@@ -108,5 +106,4 @@ class MicroblogPostBasicTest extends TestCase
 
         $this->assertNull($post);
     }
-
 }

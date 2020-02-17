@@ -36,41 +36,45 @@ abstract class MicroblogPost extends Model
         return $this->belongsTo(Journal::class);
     }
 
-    public function publish() : bool
+    public function publish() : self
     {
         if ($this->belongsToCurrentUser()) {
             $this->status = Status::PUBLISHED;
-            return $this->save();
+            $this->save();
         }
-        return false;
+
+        return $this;
     }
 
-    public function unpublish() : bool
+    public function unpublish() : self
     {
         if ($this->belongsToCurrentUser()) {
             $this->status = Status::DRAFT;
-            return $this->save();
+            $this->save();
         }
-        return false;
+
+        return $this;
     }
 
-    public function hide() : bool
+    public function hide() : self
     {
         if ($this->belongsToCurrentUser()) {
             $this->visibility = Visibility::PERSONAL;
-            return $this->save();
+            $this->save();
         }
-        return false;
+
+        return $this;
     }
 
-    public function share($onlyToFriends = true) : bool
+    public function share($onlyToFriends = true) : self
     {
         if ($this->belongsToCurrentUser()) {
             $this->status = Status::PUBLISHED;
             $this->visibility = $onlyToFriends ? Visibility::SHARED : Visibility::UNIVERSAL;
-            return $this->save();
+            $this->save();
         }
-        return false;
+
+        return $this;
     }
 
     public function belongsToCurrentUser() : bool
