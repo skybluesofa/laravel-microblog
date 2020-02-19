@@ -10,7 +10,7 @@ First, install the package through Composer.
 composer require skybluesofa/laravel-microblog
 ```
 
-Then include the service provider inside `config/app.php`.
+The service provider should be automatically installed on Laravel 5.5+. If you are running a lesser verion, then include the service provider inside `config/app.php`.
 
 ```php
 'providers' => [

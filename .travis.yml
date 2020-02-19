@@ -10,10 +10,6 @@ php:
   - 7.3
   - 7.4
 
-addons:
-    code_climate:
-        repo_token: bb9681de04daca830a87c3eb0f6500b0a815f8262107fec833e0852df2401466
-
 env:
     - APP_ENV=testing DB_CONNECTION=mysql DB_DATABASE=travis_db DB_USERNAME=travis DB_PASSWORD= CACHE_DRIVER=array SESSION_DRIVER=array QUEUE_DRIVER=sync
 

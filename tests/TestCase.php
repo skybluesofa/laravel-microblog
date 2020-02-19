@@ -20,7 +20,7 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app->make(Factory::class)->load(__DIR__.'/../src/database/factories');
+        $app->make(Factory::class)->load(__DIR__.'/../database/factories');
 
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
@@ -43,7 +43,7 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
         require_once(__DIR__.'/stubs/Stub_User.php');
 
         $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__ . '/../src/database/migrations');
-        $this->withFactories(__DIR__.'/../src/database/factories');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->withFactories(__DIR__.'/../database/factories');
     }
 }

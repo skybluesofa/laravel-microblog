@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Skybluesofa\Microblog\Status;
+use Skybluesofa\Microblog\Visibility;
 
 /**
  * Class CreateStatusPostsTable
@@ -17,10 +18,18 @@ class CreateMicroblogPostsTable extends Migration
             $table->integer('user_id')->nullable();
             $table->string('title')->nullable();
             $table->longText('content');
-            $table->integer('status')->default(1);
-            $table->integer('visibility')->default(0);
+            $table->integer('status')->default(Status::PUBLISHED);
+            $table->integer('visibility')->default(Visibility::PERSONAL);
             $table->timestamp('available_on')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamps();
+
+            $table->index(['id'], 'microblog_posts_index');
+            $table->index(['journal_id'], 'microblog_posts_journal_index');
+
+            $table->foreign('journal_id')
+                ->references('id')
+                ->on(config('microblog.tables.microblog_journals'))
+                ->onDelete('cascade');
         });
     }
 

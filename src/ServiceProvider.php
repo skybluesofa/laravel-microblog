@@ -18,8 +18,8 @@ class ServiceProvider extends IlluminateServiceProvider
             return;
         }
 
-        $migrationsDirectory = __DIR__ . '/database/migrations/';
-        $configDirectory = __DIR__ . '/config/';
+        $migrationsDirectory = __DIR__ . '/../database/migrations/';
+        $configDirectory = __DIR__ . '/../config/';
         $targetDirectory = database_path('migrations') . '/';
 
         $this->publishes([

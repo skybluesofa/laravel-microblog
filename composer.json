@@ -12,9 +12,6 @@
     "autoload-dev": {
         "classmap": [
             "tests/TestCase.php"
-        ],
-        "files": [
-            "tests/helpers.php"
         ]
     },
     "require": {
@@ -29,6 +26,13 @@
     "autoload": {
         "psr-4": {
             "Skybluesofa\\Microblog\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Skybluesofa\\Microblog\\ServiceProvider"
+            ]
         }
     }
 }

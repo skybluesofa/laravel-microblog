@@ -1,6 +1,6 @@
 <?php
-return array(
-    'providers' => append_config(array(
+return [
+    'providers' => append_config([
         'Skybluesofa\Microblog\ServiceProvider'
-    )),
-);
+    ]),
+];
