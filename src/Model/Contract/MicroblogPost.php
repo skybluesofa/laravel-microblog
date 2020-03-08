@@ -12,6 +12,8 @@ use Webpatser\Uuid\Uuid;
 use Illuminate\Database\Eloquent\Collection;
 use Skybluesofa\Microblog\Model\Scope\OrderScope;
 use Skybluesofa\Microblog\Model\Journal;
+use Skybluesofa\Microblog\Model\Image;
+use Skybluesofa\Microblog\Model\PostImage;
 
 /**
  * Class MicroblogPost
@@ -33,7 +35,28 @@ abstract class MicroblogPost extends Model
 
     public function journal()
     {
-        return $this->belongsTo(Journal::class);
+        return $this->belongsTo(Journal::class)->first();
+    }
+
+    public function images()
+    {
+        return $this->belongsToMany(
+            Image::class,
+            PostImage::class
+        );
+    }
+
+    public function user()
+    {
+        if (empty($this->journal())) {
+            return json_decode('{"name":"John Doe"}');
+        }
+        return $this->journal()->user()->first();
+    }
+
+    public function userName()
+    {
+        return $this->user()->name;
     }
 
     public function publish() : self
@@ -158,7 +181,7 @@ abstract class MicroblogPost extends Model
         }, 0);
 
         static::addGlobalScope(new PrivacyScope);
-        static::addGlobalScope(new OrderScope('available_on'));
+        static::addGlobalScope(new OrderScope('available_on', 'desc'));
     }
 
     /**
