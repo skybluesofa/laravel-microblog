@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Skybluesofa\Microblog\Model\Contract\MicroblogJournal;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Skybluesofa\Microblog\Model\Contract\MicroblogUser;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
 use Skybluesofa\Microblog\Status;
 use Skybluesofa\Microblog\Visibility;
@@ -25,20 +26,35 @@ class PrivacyScope implements Scope
     {
         $currentUser = $this->currentUser();
 
-        return $builder->where(function ($query) use ($currentUser) {
-            if ($currentUser) {
-                $query->where('journal_id', $currentUser->journalId());
-            } else {
-                $query->where('journal_id', null);
-            }
-        })->orWhere(function ($query) use ($currentUser) {
-            $query
-                ->where('available_on', '<=', Carbon::now())
+        if (!$currentUser || !method_exists($currentUser, 'getBlogFriends')) {
+            return $this->postsVisibleToGuest($builder);
+        }
+
+        return $this->postsVisibleToLoggedInUser($builder, $currentUser);
+    }
+
+    private function postsVisibleToGuest(Builder $builder)
+    {
+        return $builder->where(function ($query) {
+            $query->where('available_on', '<=', Carbon::now())
                 ->where(function ($q) {
                     $q->where('status', Status::PUBLISHED);
                     $q->where('visibility', Visibility::UNIVERSAL);
                 });
-            if ($currentUser && method_exists($currentUser, 'getBlogFriends')) {
+        });
+    }
+
+    private function postsVisibleToLoggedInUser(
+        Builder $builder,
+        MicroblogUser $currentUser
+    ) {
+        return $builder->where('journal_id', $currentUser->journalId())
+            ->orWhere(function ($query) use ($currentUser) {
+                $query->where('available_on', '<=', Carbon::now())
+                    ->where(function ($q) {
+                        $q->where('status', Status::PUBLISHED);
+                        $q->where('visibility', Visibility::UNIVERSAL);
+                    });
                 $blogFriendIds = $currentUser->getBlogFriends();
                 if (!is_null($blogFriendIds)) {
                     $query->orWhere(function ($q) use ($blogFriendIds) {
@@ -47,7 +63,6 @@ class PrivacyScope implements Scope
                         $q->where('visibility', Visibility::SHARED);
                     });
                 }
-            }
-        });
+            });
     }
 }

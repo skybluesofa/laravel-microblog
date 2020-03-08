@@ -19,16 +19,16 @@ trait MicroblogAuthor
     public function journal()
     {
         MicroblogJournal::getOrCreate($this);
-        return $this->hasOne(Journal::class);
+        return $this->hasOne(Journal::class)->first();
     }
 
     public function journalId() : string
     {
-        return $this->journal()->first()->id;
+        return $this->journal()->id;
     }
 
     public function savePost(MicroblogPost $post) : void
     {
-        $this->journal()->first()->posts()->save($post);
+        $this->journal()->posts()->save($post);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 namespace Skybluesofa\Microblog\Model\Traits;
 
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\User;
 
 /**
