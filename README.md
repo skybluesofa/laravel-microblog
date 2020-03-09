@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/skybluesofa/laravel-microblog.svg?branch=master)](https://travis-ci.org/skybluesofa/laravel-microblog) [![Code Climate](https://codeclimate.com/github/skybluesofa/laravel-microblog/badges/gpa.svg)](https://codeclimate.com/github/skybluesofa/laravel-microblog) [![Test Coverage](https://codeclimate.com/github/skybluesofa/laravel-microblog/badges/coverage.svg)](https://codeclimate.com/github/skybluesofa/laravel-microblog/coverage) [![Total Downloads](https://img.shields.io/packagist/dt/skybluesofa/laravel-microblog.svg?style=flat)](https://packagist.org/packages/skybluesofa/laravel-microblog) [![Version](https://img.shields.io/packagist/v/skybluesofa/laravel-microblog.svg?style=flat)](https://packagist.org/packages/skybluesofa/laravel-microblog) [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
+
 # Laravel 5 Microblog
 
 Create a microblogging platform (e.g., Twitter, Tumblr).
