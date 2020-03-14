@@ -188,17 +188,17 @@ abstract class MicroblogPost extends Model
      */
     public function scopeWhereUserIdIs($query, $userId) : Builder
     {
-        return $query->whereIn('journal_id', MicroblogJournal::where('user_id', $userId)->pluck('id'));
+        return $query->whereIn('journal_id', Journal::where('user_id', $userId)->pluck('id'));
     }
 
     /**
      * @param $query
-     * @param Model $collection
+     * @param array $userIds
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereUserIdIn($query, $userIdCollection) : Builder
+    public function scopeWhereUserIdIn($query, $userIds) : Builder
     {
-        return $query->whereIn('journal_id', MicroblogJournal::whereIn('user_id', $userIdCollection)->pluck('id'));
+        return $query->whereIn('journal_id', Journal::whereIn('user_id', $userIds)->pluck('id'));
     }
 
     /**

@@ -29,3 +29,10 @@ $factory->define(Skybluesofa\Microblog\Model\Post::class, function (Faker\Genera
         'content' => $faker->realText(750),
     ];
 });
+
+$factory->define(Skybluesofa\Microblog\Model\Image::class, function (Faker\Generator $faker) {
+
+    return [
+        'image' => $faker->iban() . '.jpg',
+    ];
+});

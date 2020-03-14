@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Webpatser\Uuid\Uuid;
 use Skybluesofa\Microblog\Model\User;
 use Skybluesofa\Microblog\Model\Post;
+use Skybluesofa\Microblog\Model\Image;
 
 /**
  * Class MicroblogJournal
@@ -30,6 +31,11 @@ class MicroblogJournal extends Model
     public function posts()
     {
         return $this->hasMany(Post::class, 'journal_id')->orderBy('available_on');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(Image::class, 'journal_id')->orderBy('created_on');
     }
 
     public static function forUser(Model $user) : MicroblogJournal

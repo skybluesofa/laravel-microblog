@@ -2,15 +2,16 @@
 namespace Skybluesofa\Microblog\Model\Contract;
 
 use Skybluesofa\Microblog\Visibility;
-use Skybluesofa\Microblog\Status;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Webpatser\Uuid\Uuid;
 use Skybluesofa\Microblog\Model\Scope\OrderScope;
+use Skybluesofa\Microblog\Model\Scope\Image\PrivacyScope;
 use Skybluesofa\Microblog\Model\Journal;
 use Skybluesofa\Microblog\Model\PostImage;
 use Skybluesofa\Microblog\Model\Post;
+use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
 
 /**
  * Class MicroblogImage
@@ -18,6 +19,8 @@ use Skybluesofa\Microblog\Model\Post;
  */
 abstract class MicroblogImage extends Model
 {
+    use MicroblogCurrentUser;
+
     /**
      * @var array
      */
@@ -43,9 +46,6 @@ abstract class MicroblogImage extends Model
 
     public function user()
     {
-        if (empty($this->journal())) {
-            return json_decode('{"name":"John Doe"}');
-        }
         return $this->journal()->user()->first();
     }
 
@@ -67,7 +67,6 @@ abstract class MicroblogImage extends Model
     public function share($onlyToFriends = true) : self
     {
         if ($this->belongsToCurrentUser()) {
-            $this->status = Status::PUBLISHED;
             $this->visibility = $onlyToFriends ? Visibility::SHARED : Visibility::UNIVERSAL;
             $this->save();
         }
@@ -119,6 +118,7 @@ abstract class MicroblogImage extends Model
                 : Visibility::PERSONAL;
         }, 0);
 
+        static::addGlobalScope(new PrivacyScope);
         static::addGlobalScope(new OrderScope('created_at', 'desc'));
     }
 
@@ -129,25 +129,25 @@ abstract class MicroblogImage extends Model
      */
     public function scopeWhereUserIdIs($query, $userId) : Builder
     {
-        return $query->where('user_id', $userId);
+        return $query->whereIn('journal_id', Journal::where('user_id', $userId)->pluck('id'));
     }
 
     /**
      * @param $query
-     * @param Model $collection
+     * @param array $userIds
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereUserIdIn($query, $collection) : Builder
+    public function scopeWhereUserIdIn($query, $userIds) : Builder
     {
-        return $query->whereIn('user_id', $collection->toArray());
+        return $query->whereIn('journal_id', Journal::whereIn('user_id', $userIds)->pluck('id'));
     }
 
     /**
      * @param $query
-     * @param Uuid $journalId
+     * @param string $journalId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereJournalIdIs($query, Uuid $journalId) : Builder
+    public function scopeWhereJournalIdIs($query, string $journalId) : Builder
     {
         return $query->where('journal_id', $journalId);
     }
@@ -164,13 +164,22 @@ abstract class MicroblogImage extends Model
 
     /**
      * @param $query
-     * @param Uuid $microblogImageId
+     * @param MicroblogImage $microblogImage
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereOlderThanImage($query, Uuid $microblogImageId)
+    public function scopeWhereOlderThanImage($query, MicroblogImage $microblogImage)
     {
-        $image = MicroblogImage::find($microblogImageId);
-        return $this->scopeWhereOlderThan($query, Carbon::parse($image->created_at));
+        return $this->scopeWhereOlderThan($query, Carbon::parse($microblogImage->created_at));
+    }
+
+    /**
+     * @param $query
+     * @param string $microblogImageId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWhereOlderThanImageId($query, string $microblogImageId)
+    {
+        return $this->scopeWhereOlderThanImage($query, MicroblogImage::find($microblogImageId));
     }
 
     /**
@@ -185,13 +194,22 @@ abstract class MicroblogImage extends Model
 
     /**
      * @param $query
-     * @param Uuid $microblogImageId
+     * @param MicroblogImage $microblogImage
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereNewerThanImage($query, Uuid $microblogImageId) : Builder
+    public function scopeWhereNewerThanImage($query, MicroblogImage $microblogImage) : Builder
     {
-        $image = MicroblogImage::find($microblogImageId);
-        return $this->scopeWhereNewerThan($query, Carbon::parse($image->created_at));
+        return $this->scopeWhereNewerThan($query, Carbon::parse($microblogImage->created_at));
+    }
+
+    /**
+     * @param $query
+     * @param string $microblogImageId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWhereNewerThanImageId($query, string $microblogImageId) : Builder
+    {
+        return $this->scopeWhereNewerThanImage($query, MicroblogImage::find($microblogImageId));
     }
 
     /**
@@ -218,7 +236,7 @@ abstract class MicroblogImage extends Model
      */
     public function scopeWhereOnlySharedWithFriends($query) : Builder
     {
-        return $query->where('visibility', Visibility::SHARED);
+        return $this->scopeWhereShared($query);
     }
 
     /**
