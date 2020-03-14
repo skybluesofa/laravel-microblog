@@ -48,9 +48,6 @@ abstract class MicroblogPost extends Model
 
     public function user()
     {
-        if (empty($this->journal())) {
-            return json_decode('{"name":"John Doe"}');
-        }
         return $this->journal()->user()->first();
     }
 
@@ -191,7 +188,7 @@ abstract class MicroblogPost extends Model
      */
     public function scopeWhereUserIdIs($query, $userId) : Builder
     {
-        return $query->where('user_id', $userId);
+        return $query->whereIn('journal_id', MicroblogJournal::where('user_id', $userId)->pluck('id'));
     }
 
     /**
@@ -199,17 +196,17 @@ abstract class MicroblogPost extends Model
      * @param Model $collection
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereUserIdIn($query, $collection) : Builder
+    public function scopeWhereUserIdIn($query, $userIdCollection) : Builder
     {
-        return $query->whereIn('user_id', $collection->toArray());
+        return $query->whereIn('journal_id', MicroblogJournal::whereIn('user_id', $userIdCollection)->pluck('id'));
     }
 
     /**
      * @param $query
-     * @param Uuid $journalId
+     * @param string $journalId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereJournalIdIs($query, Uuid $journalId) : Builder
+    public function scopeWhereJournalIdIs($query, string $journalId) : Builder
     {
         return $query->where('journal_id', $journalId);
     }
@@ -226,13 +223,23 @@ abstract class MicroblogPost extends Model
 
     /**
      * @param $query
-     * @param Uuid $microblogPostId
+     * @param MicroblogPost $microblogPost
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereOlderThanPost($query, Uuid $microblogPostId)
+    public function scopeWhereOlderThanPost($query, MicroblogPost $microblogPost)
+    {
+        return $this->scopeWhereOlderThan($query, Carbon::parse($microblogPost->available_on));
+    }
+
+    /**
+     * @param $query
+     * @param string $microblogPostId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWhereOlderThanPostId($query, string $microblogPostId)
     {
         $post = MicroblogPost::find($microblogPostId);
-        return $this->scopeWhereOlderThan($query, Carbon::parse($post->available_on));
+        return $this->scopeWhereOlderThanPost($query, $post);
     }
 
     /**
@@ -247,13 +254,23 @@ abstract class MicroblogPost extends Model
 
     /**
      * @param $query
-     * @param Uuid $microblogPostId
+     * @param MicroblogPost $microblogPost
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereNewerThanPost($query, Uuid $microblogPostId) : Builder
+    public function scopeWhereNewerThanPost($query, MicroblogPost $microblogPost) : Builder
+    {
+        return $this->scopeWhereNewerThan($query, Carbon::parse($microblogPost->available_on));
+    }
+
+    /**
+     * @param $query
+     * @param string $microblogPostId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWhereNewerThanPostId($query, string $microblogPostId) : Builder
     {
         $post = MicroblogPost::find($microblogPostId);
-        return $this->scopeWhereNewerThan($query, Carbon::parse($post->available_on));
+        return $this->scopeWhereNewerThanPost($query, $post);
     }
 
     /**
@@ -298,7 +315,7 @@ abstract class MicroblogPost extends Model
      */
     public function scopeWhereOnlySharedWithFriends($query) : Builder
     {
-        return $query->where('visibility', Visibility::SHARED);
+        return $this->scopeWhereShared($query);
     }
 
     /**

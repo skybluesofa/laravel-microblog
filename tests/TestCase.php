@@ -31,6 +31,8 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
 
         $app['config']->set('microblog.tables.microblog_posts', 'microblog_posts');
         $app['config']->set('microblog.tables.microblog_journals', 'microblog_journals');
+        $app['config']->set('microblog.tables.microblog_images', 'microblog_images');
+        $app['config']->set('microblog.tables.microblog_post_images', 'microblog_post_images');
     }
 
     /**
@@ -45,5 +47,14 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
         $this->loadLaravelMigrations();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->withFactories(__DIR__.'/../database/factories');
+    }
+
+    public function logout($driver = null)
+    {
+        $this->app['auth']->guard($driver)->logout();
+
+        $this->app['auth']->shouldUse($driver);
+
+        return $this;
     }
 }

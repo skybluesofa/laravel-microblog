@@ -74,4 +74,19 @@ class MicroblogJournalTest extends TestCase
 
         $this->assertFalse($journal->belongsToCurrentUser());
     }
+
+    public function test_journal_does_not_belong_to_current_user()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+        $post = factory(Post::class)->make();
+        $user->savePost($post);
+        $journal = Journal::forUser($user);
+        $this->assertCount(1, $journal->posts()->get());
+
+        $this->logout();
+
+        $this->assertFalse($journal->belongsToCurrentUser());
+        $this->assertCount(0, $journal->posts()->get());
+    }
 }

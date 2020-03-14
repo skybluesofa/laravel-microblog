@@ -29,7 +29,7 @@ class MicroblogJournal extends Model
 
     public function posts()
     {
-        return $this->hasMany(Post::class)->orderBy('available_on');
+        return $this->hasMany(Post::class, 'journal_id')->orderBy('available_on');
     }
 
     public static function forUser(Model $user) : MicroblogJournal
@@ -85,7 +85,13 @@ class MicroblogJournal extends Model
 
     public function belongsToCurrentUser() : bool
     {
-        return $this->user_id == $this->currentUser()->id;
+        $currentUser = $this->currentUser();
+
+        if ($currentUser) {
+            return $this->user_id == $currentUser->id;
+        }
+        
+        return false;
     }
 
     /**
