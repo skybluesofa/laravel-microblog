@@ -1,6 +1,7 @@
 <?php
+
 return [
     'providers' => append_config([
-        'Skybluesofa\Microblog\ServiceProvider'
+        'Skybluesofa\Microblog\MicroblogServiceProvider',
     ]),
 ];

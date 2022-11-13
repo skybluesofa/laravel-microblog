@@ -39,7 +39,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Skybluesofa\\Microblog\\ServiceProvider"
+                "Skybluesofa\\Microblog\\MicroblogServiceProvider"
             ]
         }
     }
