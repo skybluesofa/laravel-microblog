@@ -1,12 +1,12 @@
 <?php
 
-namespace Skybluesofa\Microblog;
+namespace Skybluesofa\Microblog\Enums;
 
-/**
- * Class Status.
- */
 class Status
 {
     const DRAFT = 0;
+
     const PUBLISHED = 1;
+
+    const ARCHIVED = -1;
 }

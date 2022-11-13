@@ -1,13 +1,12 @@
 <?php
 
-namespace Skybluesofa\Microblog;
+namespace Skybluesofa\Microblog\Enums;
 
-/**
- * Class Visibility.
- */
 class Visibility
 {
     const PERSONAL = 0;
+
     const SHARED = 1;
+
     const UNIVERSAL = 2;
 }
