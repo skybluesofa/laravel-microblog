@@ -1,15 +1,15 @@
 <?php
+
 namespace Skybluesofa\Microblog\Model\Scope\Image;
 
 use App\User;
-use Illuminate\Database\Eloquent\Scope;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Skybluesofa\Microblog\Model\Contract\MicroblogJournal;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope;
+use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Model\Contract\MicroblogJournal;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
-use Skybluesofa\Microblog\Visibility;
-use Skybluesofa\Microblog\Status;
 
 class PublicScope implements Scope
 {
@@ -19,7 +19,7 @@ class PublicScope implements Scope
      * Apply the scope to a given Eloquent query builder.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
-     * @param  \Illuminate\Database\Eloquent\Model $model
+     * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return void
      */
     public function apply(Builder $builder, Model $model)
@@ -57,7 +57,7 @@ class PublicScope implements Scope
                 });
             if ($currentUser && method_exists($currentUser, 'getBlogFriends')) {
                 $blogFriendIds = $currentUser->getBlogFriends();
-                if (!is_null($blogFriendIds)) {
+                if (! is_null($blogFriendIds)) {
                     $query->orWhere(function ($q) use ($blogFriendIds) {
                         $q->whereIn('journal_id', MicroblogJournal::whereIn('user_id', $blogFriendIds)->pluck('id'));
                         $q->where('visibility', Visibility::SHARED);

@@ -1,16 +1,14 @@
 <?php
 
+namespace Skybluesofa\Microblog\Tests;
+
 use Illuminate\Database\Eloquent\Factory;
+use Orchestra\Testbench\TestCase as BaseTestCase;
+use Skybluesofa\Microblog\MicroblogServiceProvider;
 
-abstract class TestCase extends Orchestra\Testbench\TestCase
+abstract class TestCase extends BaseTestCase
 {
-
-    /**
-     * The base URL to use while testing the application.
-     *
-     * @var string
-     */
-    protected $baseUrl = 'http://localhost';
+    protected $enablesPackageDiscoveries = true;
 
     /**
      * Define environment setup.
@@ -24,9 +22,9 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
 
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
 
         $app['config']->set('microblog.tables.microblog_posts', 'microblog_posts');
@@ -38,15 +36,22 @@ abstract class TestCase extends Orchestra\Testbench\TestCase
     /**
      * Setup DB before each test.
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
-        require_once(__DIR__.'/stubs/Stub_User.php');
+        require_once __DIR__.'/stubs/Stub_User.php';
 
         $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->withFactories(__DIR__.'/../database/factories');
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            MicroblogServiceProvider::class,
+        ];
     }
 
     public function logout($driver = null)

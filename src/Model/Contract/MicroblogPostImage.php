@@ -1,4 +1,5 @@
 <?php
+
 namespace Skybluesofa\Microblog\Model\Contract;
 
 use Illuminate\Database\Eloquent\Model;

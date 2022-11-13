@@ -1,12 +1,12 @@
 <?php
 
-use Skybluesofa\Microblog\Status;
-use Skybluesofa\Microblog\Visibility;
+use App\User;
+use Carbon\Carbon;
+use Skybluesofa\Microblog\Enums\Visibility;
 use Skybluesofa\Microblog\Model\Image;
 use Skybluesofa\Microblog\Model\Journal;
-use App\User;
 use Skybluesofa\Microblog\Model\User as MicroblogUser;
-use Carbon\Carbon;
+use Skybluesofa\Microblog\Tests\Testcase;
 
 class MicroblogImageTest extends TestCase
 {
@@ -140,7 +140,7 @@ class MicroblogImageTest extends TestCase
         $image1 = factory(Image::class)->make();
         $user1->saveImage($image1);
         $image1->share(false);
-        
+
         $images = Image::whereUserIdIn([$user1->id])->get();
         $this->assertCount(1, $images);
 
@@ -148,10 +148,10 @@ class MicroblogImageTest extends TestCase
         $this->be($user2);
         $image2 = factory(Image::class)->make();
         $user2->saveImage($image2);
-        
+
         $images = Image::whereUserIdIn([$user2->id])->get();
         $this->assertCount(1, $images);
-        
+
         $images = Image::whereUserIdIn([$user1->id, $user2->id])->get();
         $this->assertCount(2, $images); // The count is 2 because user1's image was shared with the world
 

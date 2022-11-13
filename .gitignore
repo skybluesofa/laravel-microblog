@@ -3,3 +3,4 @@ vendor
 /.idea
 .DS_Store
 log/**
+.phpunit.result.cache

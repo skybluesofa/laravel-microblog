@@ -1,12 +1,13 @@
 <?php
+
 namespace Skybluesofa\Microblog\Model\Scope\Journal;
 
-use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Foundation\Auth\User;
+use Skybluesofa\Microblog\Enums\Visibility;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
-use Skybluesofa\Microblog\Visibility;
 
 class PrivacyScope implements Scope
 {
@@ -23,7 +24,7 @@ class PrivacyScope implements Scope
     {
         $currentUser = $this->currentUser();
 
-        if (!$currentUser) {
+        if (! $currentUser) {
             return $this->journalsVisibleToGuest($builder);
         }
 
@@ -46,7 +47,7 @@ class PrivacyScope implements Scope
             ->orWhere(function ($q) use ($currentUser) {
                 if ($currentUser && method_exists($currentUser, 'getBlogFriends')) {
                     $blogFriendIds = $currentUser->getBlogFriends();
-                    if (!is_null($blogFriendIds)) {
+                    if (! is_null($blogFriendIds)) {
                         $q->whereIn('user_id', $blogFriendIds);
                     }
                 }

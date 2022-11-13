@@ -14,8 +14,13 @@
 $factory->define(App\User::class, function (Faker\Generator $faker) {
     static $password;
 
+    $firstName = $faker->firstName;
+    $lastName = $faker->lastName;
+
     return [
-        'name' => $faker->name,
+        'name' => $firstName.' '.$lastName,
+        'first_name' => $firstName,
+        'last_name' => $lastName,
         'email' => $faker->unique()->safeEmail,
         'password' => $password ?: $password = bcrypt('secret'),
         'remember_token' => Illuminate\Support\Str::random(10),
@@ -23,7 +28,6 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 });
 
 $factory->define(Skybluesofa\Microblog\Model\Post::class, function (Faker\Generator $faker) {
-
     return [
         'title' => $faker->realText(50),
         'content' => $faker->realText(750),
@@ -31,8 +35,7 @@ $factory->define(Skybluesofa\Microblog\Model\Post::class, function (Faker\Genera
 });
 
 $factory->define(Skybluesofa\Microblog\Model\Image::class, function (Faker\Generator $faker) {
-
     return [
-        'image' => $faker->iban() . '.jpg',
+        'image' => $faker->iban().'.jpg',
     ];
 });

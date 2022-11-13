@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Skybluesofa\Microblog\Visibility;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Skybluesofa\Microblog\Enums\Visibility;
 
 /**
  * Class CreateStatusPostsTable
@@ -13,7 +13,6 @@ class CreateMicroblogJournalsTable extends Migration
     public function up()
     {
         Schema::create(config('microblog.tables.microblog_journals'), function (Blueprint $table) {
-
             $table->uuid('id');
             $table->bigIncrements('user_id');
             $table->tinyInteger('visibility')->default(Visibility::UNIVERSAL);

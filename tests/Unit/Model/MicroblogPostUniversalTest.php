@@ -1,9 +1,10 @@
 <?php
 
-use Skybluesofa\Microblog\Status;
-use Skybluesofa\Microblog\Visibility;
-use Skybluesofa\Microblog\Model\Post;
 use App\User;
+use Skybluesofa\Microblog\Enums\Status;
+use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Model\Post;
+use Skybluesofa\Microblog\Tests\Testcase;
 
 class MicroblogPostUniversalTest extends TestCase
 {

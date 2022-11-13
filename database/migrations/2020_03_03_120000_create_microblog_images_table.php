@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Skybluesofa\Microblog\Visibility;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Skybluesofa\Microblog\Enums\Visibility;
 
 /**
  * Class CreateMicroblogImagesTable
@@ -25,7 +25,7 @@ class CreateMicroblogImagesTable extends Migration
             $table->string('area_of_interest')->nullable();
             $table->tinyInteger('visibility')->default(Visibility::UNIVERSAL);
             $table->timestamps();
-        
+
             $table->index(['id'], 'microblog_images_index');
             $table->index(['journal_id'], 'microblog_images_journal_index');
 

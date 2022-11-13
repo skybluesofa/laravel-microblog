@@ -1,14 +1,15 @@
 <?php
+
 namespace Skybluesofa\Microblog\Model\Scope\Image;
 
-use Illuminate\Database\Eloquent\Scope;
-use Illuminate\Database\Eloquent\Builder;
-use Skybluesofa\Microblog\Model\Contract\MicroblogJournal;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope;
+use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Model\Contract\MicroblogJournal;
 use Skybluesofa\Microblog\Model\Contract\MicroblogUser;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
-use Skybluesofa\Microblog\Visibility;
 
 class PrivacyScope implements Scope
 {
@@ -25,7 +26,7 @@ class PrivacyScope implements Scope
     {
         $currentUser = $this->currentUser();
 
-        if (!$currentUser || !method_exists($currentUser, 'getBlogFriends')) {
+        if (! $currentUser || ! method_exists($currentUser, 'getBlogFriends')) {
             return $this->imagesVisibleToGuest($builder);
         }
 
@@ -53,7 +54,7 @@ class PrivacyScope implements Scope
                         $q->where('visibility', Visibility::UNIVERSAL);
                     });
                 $blogFriendIds = $currentUser->getBlogFriends();
-                if (!is_null($blogFriendIds)) {
+                if (! is_null($blogFriendIds)) {
                     $query->orWhere(function ($q) use ($blogFriendIds) {
                         $q->whereIn('journal_id', MicroblogJournal::whereIn('user_id', $blogFriendIds)->pluck('id'));
                         $q->where('visibility', Visibility::SHARED);

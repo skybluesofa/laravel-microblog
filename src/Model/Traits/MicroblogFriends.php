@@ -1,13 +1,7 @@
 <?php
+
 namespace Skybluesofa\Microblog\Model\Traits;
 
-/**
- * Class BlogFriends
- * @package Skybluesofa\Microblog\Traits
- *
- * Applying this trait to a User model will allow you to implement your own
- * getBlogFriends() method for your special use case.
- */
 trait MicroblogFriends
 {
     // Return null to get all users
@@ -18,7 +12,7 @@ trait MicroblogFriends
 
     // Return an empty array to get no user ids
     //return [];
-    abstract public function getBlogFriends() : ?Array;
+    abstract public function getBlogFriends(): ?array;
 
-    abstract public function setBlogFriends(?Array $blogFriends) : self;
+    abstract public function setBlogFriends(?array $blogFriends = null): self;
 }

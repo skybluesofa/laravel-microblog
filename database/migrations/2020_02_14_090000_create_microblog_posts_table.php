@@ -1,9 +1,11 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Skybluesofa\Microblog\Status;
-use Skybluesofa\Microblog\Visibility;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Skybluesofa\Microblog\Enums\Status;
+use Skybluesofa\Microblog\Enums\Visibility;
 
 /**
  * Class CreateStatusPostsTable

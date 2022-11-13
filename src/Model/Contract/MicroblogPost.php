@@ -1,24 +1,21 @@
 <?php
+
 namespace Skybluesofa\Microblog\Model\Contract;
 
-use Skybluesofa\Microblog\Status;
-use Skybluesofa\Microblog\Visibility;
-use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
-use Skybluesofa\Microblog\Model\Scope\Post\PrivacyScope;
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Webpatser\Uuid\Uuid;
 use Illuminate\Database\Eloquent\Collection;
-use Skybluesofa\Microblog\Model\Scope\OrderScope;
-use Skybluesofa\Microblog\Model\Journal;
+use Illuminate\Database\Eloquent\Model;
+use Skybluesofa\Microblog\Enums\Status;
+use Skybluesofa\Microblog\Enums\Visibility;
 use Skybluesofa\Microblog\Model\Image;
+use Skybluesofa\Microblog\Model\Journal;
 use Skybluesofa\Microblog\Model\PostImage;
+use Skybluesofa\Microblog\Model\Scope\OrderScope;
+use Skybluesofa\Microblog\Model\Scope\Post\PrivacyScope;
+use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
+use Webpatser\Uuid\Uuid;
 
-/**
- * Class MicroblogPost
- * @package Skybluesofa\StatusPosts\Models
- */
 abstract class MicroblogPost extends Model
 {
     use MicroblogCurrentUser;
@@ -27,6 +24,17 @@ abstract class MicroblogPost extends Model
      * @var array
      */
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    /**
+     * @param  array  $attributes
+     */
+    public function __construct(array $attributes = [])
+    {
+        $this->table = config('microblog.tables.microblog_posts');
+        $this->incrementing = $this->getIncrementing();
+
+        parent::__construct($attributes);
+    }
 
     /**
      * @var array
@@ -56,7 +64,7 @@ abstract class MicroblogPost extends Model
         return $this->user()->name;
     }
 
-    public function publish() : self
+    public function publish(): self
     {
         if ($this->belongsToCurrentUser()) {
             $this->status = Status::PUBLISHED;
@@ -66,7 +74,7 @@ abstract class MicroblogPost extends Model
         return $this;
     }
 
-    public function unpublish() : self
+    public function unpublish(): self
     {
         if ($this->belongsToCurrentUser()) {
             $this->status = Status::DRAFT;
@@ -76,7 +84,7 @@ abstract class MicroblogPost extends Model
         return $this;
     }
 
-    public function hide() : self
+    public function hide(): self
     {
         if ($this->belongsToCurrentUser()) {
             $this->visibility = Visibility::PERSONAL;
@@ -86,7 +94,7 @@ abstract class MicroblogPost extends Model
         return $this;
     }
 
-    public function share($onlyToFriends = true) : self
+    public function share($onlyToFriends = true): self
     {
         if ($this->belongsToCurrentUser()) {
             $this->status = Status::PUBLISHED;
@@ -97,7 +105,7 @@ abstract class MicroblogPost extends Model
         return $this;
     }
 
-    public function belongsToCurrentUser() : bool
+    public function belongsToCurrentUser(): bool
     {
         return $this->journal()->first()->user()->first()->id == $this->currentUser()->id;
     }
@@ -107,9 +115,9 @@ abstract class MicroblogPost extends Model
         $microblogFriends = $this->getBlogFriends($user);
     }
 
-    private function getBlogFriends(Model $user) : ?Array
+    private function getBlogFriends(Model $user): ?array
     {
-        if (!method_exists($user, 'getBlogFriends')) {
+        if (! method_exists($user, 'getBlogFriends')) {
             // If the method isn't available, then simply return NULL
             return null;
         }
@@ -124,26 +132,16 @@ abstract class MicroblogPost extends Model
             return $microblogFriends;
         } elseif ($microblogFriends instanceof Collection) {
             // If it's a collection, we will assume that it is a collection of User models
-            if ($microblogFriends->count()==0) {
+            if ($microblogFriends->count() == 0) {
                 return [];
             }
             $keyName = $microblogFriends->first()->getKeyName();
+
             return $microblogFriends->pluck($keyName);
         }
     }
 
-    /**
-     * @param array $attributes
-     */
-    public function __construct(array $attributes = array())
-    {
-        $this->table = config('microblog.tables.microblog_posts');
-        $this->incrementing = $this->getIncrementing();
-
-        parent::__construct($attributes);
-    }
-
-    public function getIncrementing() : bool
+    public function getIncrementing(): bool
     {
         // We use a UUID, so the model key is not going to increment automatically
         return false;
@@ -161,7 +159,7 @@ abstract class MicroblogPost extends Model
             // This is necessary because on \Illuminate\Database\Eloquent\Model::performInsert
             // will not check for $this->getIncrementing() but directly for $this->incrementing
             $model->incrementing = false;
-            $uuidVersion = (!empty($model->uuidVersion) ? $model->uuidVersion : 4);   // defaults to 4
+            $uuidVersion = (! empty($model->uuidVersion) ? $model->uuidVersion : 4);   // defaults to 4
             $uuid = Uuid::generate($uuidVersion);
             $model->attributes[$model->getKeyName()] = $uuid->string;
 
@@ -183,47 +181,47 @@ abstract class MicroblogPost extends Model
 
     /**
      * @param $query
-     * @param Int $userId
+     * @param  int  $userId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereUserIdIs($query, $userId) : Builder
+    public function scopeWhereUserIdIs($query, $userId): Builder
     {
         return $query->whereIn('journal_id', Journal::where('user_id', $userId)->pluck('id'));
     }
 
     /**
      * @param $query
-     * @param array $userIds
+     * @param  array  $userIds
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereUserIdIn($query, $userIds) : Builder
+    public function scopeWhereUserIdIn($query, $userIds): Builder
     {
         return $query->whereIn('journal_id', Journal::whereIn('user_id', $userIds)->pluck('id'));
     }
 
     /**
      * @param $query
-     * @param string $journalId
+     * @param  string  $journalId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereJournalIdIs($query, string $journalId) : Builder
+    public function scopeWhereJournalIdIs($query, string $journalId): Builder
     {
         return $query->where('journal_id', $journalId);
     }
 
     /**
      * @param $query
-     * @param Carbon $date
+     * @param  Carbon  $date
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereOlderThan($query, Carbon $date) : Builder
+    public function scopeWhereOlderThan($query, Carbon $date): Builder
     {
         return $query->where('available_on', '<', $date);
     }
 
     /**
      * @param $query
-     * @param MicroblogPost $microblogPost
+     * @param  MicroblogPost  $microblogPost
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWhereOlderThanPost($query, MicroblogPost $microblogPost)
@@ -233,43 +231,45 @@ abstract class MicroblogPost extends Model
 
     /**
      * @param $query
-     * @param string $microblogPostId
+     * @param  string  $microblogPostId
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWhereOlderThanPostId($query, string $microblogPostId)
     {
         $post = MicroblogPost::find($microblogPostId);
+
         return $this->scopeWhereOlderThanPost($query, $post);
     }
 
     /**
      * @param $query
-     * @param Carbon $date
+     * @param  Carbon  $date
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereNewerThan($query, Carbon $date) : Builder
+    public function scopeWhereNewerThan($query, Carbon $date): Builder
     {
         return $query->where('available_on', '>', $date);
     }
 
     /**
      * @param $query
-     * @param MicroblogPost $microblogPost
+     * @param  MicroblogPost  $microblogPost
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereNewerThanPost($query, MicroblogPost $microblogPost) : Builder
+    public function scopeWhereNewerThanPost($query, MicroblogPost $microblogPost): Builder
     {
         return $this->scopeWhereNewerThan($query, Carbon::parse($microblogPost->available_on));
     }
 
     /**
      * @param $query
-     * @param string $microblogPostId
+     * @param  string  $microblogPostId
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereNewerThanPostId($query, string $microblogPostId) : Builder
+    public function scopeWhereNewerThanPostId($query, string $microblogPostId): Builder
     {
         $post = MicroblogPost::find($microblogPostId);
+
         return $this->scopeWhereNewerThanPost($query, $post);
     }
 
@@ -277,7 +277,7 @@ abstract class MicroblogPost extends Model
      * @param $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWherePublished($query) : Builder
+    public function scopeWherePublished($query): Builder
     {
         return $query->where('status', Status::PUBLISHED);
     }
@@ -286,7 +286,7 @@ abstract class MicroblogPost extends Model
      * @param $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereUnpublished($query) : Builder
+    public function scopeWhereUnpublished($query): Builder
     {
         return $query->where('status', Status::DRAFT);
     }
@@ -295,7 +295,7 @@ abstract class MicroblogPost extends Model
      * @param $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWherePersonal($query) : Builder
+    public function scopeWherePersonal($query): Builder
     {
         return $query->where('visibility', Visibility::PERSONAL);
     }
@@ -304,7 +304,7 @@ abstract class MicroblogPost extends Model
      * @param $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereShared($query) : Builder
+    public function scopeWhereShared($query): Builder
     {
         return $query->where('visibility', Visibility::SHARED);
     }
@@ -313,7 +313,7 @@ abstract class MicroblogPost extends Model
      * @param $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereOnlySharedWithFriends($query) : Builder
+    public function scopeWhereOnlySharedWithFriends($query): Builder
     {
         return $this->scopeWhereShared($query);
     }
@@ -322,7 +322,7 @@ abstract class MicroblogPost extends Model
      * @param $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWherePublic($query) : Builder
+    public function scopeWherePublic($query): Builder
     {
         return $query->where('visibility', Visibility::UNIVERSAL);
     }

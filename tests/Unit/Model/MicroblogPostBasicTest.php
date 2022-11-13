@@ -1,12 +1,13 @@
 <?php
 
-use Skybluesofa\Microblog\Status;
-use Skybluesofa\Microblog\Visibility;
-use Skybluesofa\Microblog\Model\Post;
-use Skybluesofa\Microblog\Model\Journal;
 use App\User;
-use Skybluesofa\Microblog\Model\User as MicroblogUser;
 use Carbon\Carbon;
+use Skybluesofa\Microblog\Enums\Status;
+use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Model\Journal;
+use Skybluesofa\Microblog\Model\Post;
+use Skybluesofa\Microblog\Model\User as MicroblogUser;
+use Skybluesofa\Microblog\Tests\Testcase;
 
 class MicroblogPostBasicTest extends TestCase
 {
@@ -189,7 +190,7 @@ class MicroblogPostBasicTest extends TestCase
         $post1 = factory(Post::class)->make();
         $user1->savePost($post1);
         $post1->share(false); // share with the world
-        
+
         $posts = Post::whereUserIdIn([$user1->id])->get();
         $this->assertCount(1, $posts);
 
@@ -197,7 +198,7 @@ class MicroblogPostBasicTest extends TestCase
         $this->be($user2);
         $post2 = factory(Post::class)->make();
         $user2->savePost($post2);
-        
+
         $posts = Post::whereUserIdIn([$user2->id])->get();
         $this->assertCount(1, $posts);
 

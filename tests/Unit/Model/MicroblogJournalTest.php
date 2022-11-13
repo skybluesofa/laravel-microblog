@@ -1,10 +1,11 @@
 <?php
 
-use Skybluesofa\Microblog\Model\Post;
-use Skybluesofa\Microblog\Model\Journal;
 use App\User;
+use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Model\Journal;
+use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
-use Skybluesofa\Microblog\Visibility;
+use Skybluesofa\Microblog\Tests\Testcase;
 
 class MicroblogJournalTest extends TestCase
 {
@@ -28,7 +29,7 @@ class MicroblogJournalTest extends TestCase
         $postCount = 2;
         $testPostCount = $postCount;
         while ($postCount) {
-            --$postCount;
+            $postCount--;
             $post = factory(Post::class)->make();
             $this->currentUser()->savePost($post);
         }
