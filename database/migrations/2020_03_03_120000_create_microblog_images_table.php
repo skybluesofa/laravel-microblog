@@ -5,9 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Skybluesofa\Microblog\Enums\Visibility;
 
-/**
- * Class CreateMicroblogImagesTable
- */
 class CreateMicroblogImagesTable extends Migration
 {
     /**
@@ -23,7 +20,12 @@ class CreateMicroblogImagesTable extends Migration
             $table->integer('user_id')->nullable();
             $table->string('image');
             $table->string('area_of_interest')->nullable();
-            $table->tinyInteger('visibility')->default(Visibility::UNIVERSAL);
+            $table->tinyInteger('visibility')
+                ->default(
+                    (config('database.default') === 'testbench')
+                        ? Visibility::PERSONAL
+                        : Visibility::UNIVERSAL
+                    );
             $table->timestamps();
 
             $table->index(['id'], 'microblog_images_index');
