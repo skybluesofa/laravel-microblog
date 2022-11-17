@@ -6,6 +6,10 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Events\Image\MicroblogImageCreated;
+use Skybluesofa\Microblog\Events\Image\MicroblogImageDeleted;
+use Skybluesofa\Microblog\Events\Image\MicroblogImageShared;
+use Skybluesofa\Microblog\Events\Image\MicroblogImageUnshared;
 use Skybluesofa\Microblog\Model\Journal;
 use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\PostImage;
@@ -19,6 +23,11 @@ abstract class MicroblogImage extends Model
     use MicroblogCurrentUser;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $dispatchesEvents = [
+        'created' => MicroblogImageCreated::class,
+        'deleted' => MicroblogImageDeleted::class,
+    ];
 
     protected bool $ignorePrivacy = false;
 
@@ -107,6 +116,16 @@ abstract class MicroblogImage extends Model
             $model->attributes['visibility'] = isset($model->attributes['visibility'])
                 ? $model->attributes['visibility']
                 : Visibility::PERSONAL;
+        }, 0);
+
+        static::updated(function ($image) {
+            if (!$image->originalIsEquivalent('visibility')) {
+                if ($image->visibility == Visibility::PERSONAL) {
+                    MicroblogImageUnshared::dispatch($image);
+                } elseif ($image->getOriginal('visibility') == Visibility::PERSONAL) {
+                    MicroblogImageShared::dispatch($image);
+                }
+            }
         }, 0);
 
         static::addGlobalScope(new PrivacyScope);

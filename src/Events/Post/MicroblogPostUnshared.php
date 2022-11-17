@@ -1,25 +1,25 @@
 <?php
 
-namespace Skybluesofa\Microblog\Events\User;
+namespace Skybluesofa\Microblog\Events\Post;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Skybluesofa\Microblog\Model\Contract\MicroblogUser;
+use Skybluesofa\Microblog\Model\Contract\MicroblogPost;
 
-class MicroblogUserCreated implements ShouldQueue
+class MicroblogPostUnshared implements ShouldQueue
 {
     use Dispatchable, SerializesModels;
 
-    public MicroblogUser $user;
+    public MicroblogPost $post;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(MicroblogUser $user)
+    public function __construct(MicroblogPost $post)
     {
-        $this->user = $user;
+        $this->post = $post;
     }
 }

@@ -4,6 +4,9 @@ namespace Skybluesofa\Microblog\Model\Contract;
 
 use Illuminate\Database\Eloquent\Model;
 use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Events\Journal\MicroblogJournalCreated;
+use Skybluesofa\Microblog\Events\Journal\MicroblogJournalShared;
+use Skybluesofa\Microblog\Events\Journal\MicroblogJournalUnshared;
 use Skybluesofa\Microblog\Model\Image;
 use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\Scope\Journal\PrivacyScope as JournalPrivacyScope;
@@ -16,6 +19,10 @@ class MicroblogJournal extends Model
     use MicroblogCurrentUser;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $dispatchesEvents = [
+        'created' => MicroblogJournalCreated::class,
+    ];
 
     public function user()
     {
@@ -119,17 +126,27 @@ class MicroblogJournal extends Model
     {
         parent::boot();
 
-        static::creating(function ($model) {
+        static::creating(function ($journal) {
             // This is necessary because on \Illuminate\Database\Eloquent\Model::performInsert
             // will not check for $this->getIncrementing() but directly for $this->incrementing
-            $model->incrementing = false;
-            $uuidVersion = (! empty($model->uuidVersion) ? $model->uuidVersion : 4);   // defaults to 4
+            $journal->incrementing = false;
+            $uuidVersion = (! empty($journal->uuidVersion) ? $journal->uuidVersion : 4);   // defaults to 4
             $uuid = Uuid::generate($uuidVersion);
-            $model->attributes[$model->getKeyName()] = $uuid->string;
+            $journal->attributes[$journal->getKeyName()] = $uuid->string;
 
-            $model->attributes['visibility'] = isset($model->attributes['visibility'])
-                ? $model->attributes['visibility']
+            $journal->attributes['visibility'] = isset($journal->attributes['visibility'])
+                ? $journal->attributes['visibility']
                 : Visibility::SHARED;
+        }, 0);
+
+        static::updated(function ($journal) {
+            if (!$journal->originalIsEquivalent('visibility')) {
+                if ($journal->visibility == Visibility::PERSONAL) {
+                    MicroblogJournalUnshared::dispatch($journal);
+                } elseif ($journal->getOriginal('visibility') == Visibility::PERSONAL) {
+                    MicroblogJournalShared::dispatch($journal);
+                }
+            }
         }, 0);
 
         static::addGlobalScope(new JournalPrivacyScope);

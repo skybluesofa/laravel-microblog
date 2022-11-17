@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Skybluesofa\Microblog\Enums\Status;
 use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostCreated;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostDeleted;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostShared;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostUnshared;
 use Skybluesofa\Microblog\Model\Image;
 use Skybluesofa\Microblog\Model\Journal;
 use Skybluesofa\Microblog\Model\PostImage;
@@ -24,6 +28,11 @@ abstract class MicroblogPost extends Model
      * @var array
      */
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $dispatchesEvents = [
+        'created' => MicroblogPostCreated::class,
+        'deleted' => MicroblogPostDeleted::class,
+    ];
 
     /**
      * @param  array  $attributes
@@ -107,6 +116,10 @@ abstract class MicroblogPost extends Model
 
     public function belongsToCurrentUser(): bool
     {
+        if (! $this->currentUser()) {
+            return false;
+        }
+
         return $this->journal()->first()->user()->first()->id == $this->currentUser()->id;
     }
 
@@ -173,6 +186,16 @@ abstract class MicroblogPost extends Model
             $model->attributes['available_on'] = isset($model->attributes['available_on'])
                 ? $model->attributes['available_on']
                 : date('Y-m-d H:i:s');
+        }, 0);
+
+        static::updated(function ($post) {
+            if (!$post->originalIsEquivalent('visibility')) {
+                if ($post->visibility == Visibility::PERSONAL) {
+                    MicroblogPostUnshared::dispatch($post);
+                } elseif ($post->getOriginal('visibility') == Visibility::PERSONAL) {
+                    MicroblogPostShared::dispatch($post);
+                }
+            }
         }, 0);
 
         static::addGlobalScope(new PrivacyScope);

@@ -1,25 +1,25 @@
 <?php
 
-namespace Skybluesofa\Microblog\Events\User;
+namespace Skybluesofa\Microblog\Events\Image;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Skybluesofa\Microblog\Model\Contract\MicroblogUser;
+use Skybluesofa\Microblog\Model\Contract\MicroblogImage;
 
-class MicroblogUserCreated implements ShouldQueue
+class MicroblogImageUnshared implements ShouldQueue
 {
     use Dispatchable, SerializesModels;
 
-    public MicroblogUser $user;
+    public MicroblogImage $image;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(MicroblogUser $user)
+    public function __construct(MicroblogImage $image)
     {
-        $this->user = $user;
+        $this->image = $image;
     }
 }

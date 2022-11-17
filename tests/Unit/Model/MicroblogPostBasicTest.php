@@ -8,9 +8,50 @@ use Skybluesofa\Microblog\Model\Journal;
 use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\User as MicroblogUser;
 use Skybluesofa\Microblog\Tests\Testcase;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostCreated;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostShared;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostUnshared;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostDeleted;
+use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
 
 class MicroblogPostBasicTest extends TestCase
 {
+    use MicroblogCurrentUser;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Event::fake([
+            MicroblogPostCreated::class,
+            MicroblogPostShared::class,
+            MicroblogPostUnshared::class,
+            MicroblogPostDeleted::class,
+        ]);
+    }
+
+    public function test_create_a_journal_post_fires_correct_events()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $post = factory(Post::class)->make();
+        $this->currentUser()->savePost($post);
+
+        $journalId = Journal::where('user_id', $user->id)->pluck('id');
+        $this->assertCount(
+            1,
+            Post::where('journal_id', $journalId[0])
+                ->withoutGlobalScopes()
+                ->pluck('id')
+        );
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
+    }
+    
     public function test_user_can_create_a_new_blog_post()
     {
         $user = factory(User::class)->create();
@@ -20,6 +61,11 @@ class MicroblogPostBasicTest extends TestCase
         $user->savePost($post);
 
         $this->assertCount(1, Post::withoutGlobalScopes()->where('journal_id', $user->journalId())->pluck('id'));
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_get_post_journal_user()
@@ -37,6 +83,11 @@ class MicroblogPostBasicTest extends TestCase
         $this->assertEquals($user->id, $postUser->id);
 
         $this->assertEquals($user->name, $post->userName());
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_user_can_delete_a_blog_post()
@@ -52,6 +103,11 @@ class MicroblogPostBasicTest extends TestCase
         $post->delete();
 
         $this->assertCount(0, Post::withoutGlobalScopes()->where('journal_id', $user->journalId())->pluck('id'));
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 1);
     }
 
     public function test_user_can_publish_unpublish_and_republish_a_blog_post()
@@ -82,6 +138,11 @@ class MicroblogPostBasicTest extends TestCase
         $unpublishedPosts = Post::whereUnpublished()->get();
         $this->assertCount(1, $publishedPosts);
         $this->assertCount(0, $unpublishedPosts);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_user_can_make_a_blog_post_personal()
@@ -118,6 +179,11 @@ class MicroblogPostBasicTest extends TestCase
         $this->assertCount(0, $personalPosts);
         $this->assertCount(0, $sharedPosts);
         $this->assertCount(1, $publicPosts);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 1);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_blog_post_belongs_to_current_user()
@@ -129,6 +195,11 @@ class MicroblogPostBasicTest extends TestCase
         $user->savePost($post);
 
         $this->assertTrue($post->belongsToCurrentUser());
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_blog_post_does_not_belong_to_current_user()
@@ -143,8 +214,99 @@ class MicroblogPostBasicTest extends TestCase
         $this->be($user2);
 
         $this->assertFalse($post->belongsToCurrentUser());
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
+    public function test_post_visibility()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $post = factory(Post::class)->make();
+        $this->currentUser()->savePost($post);
+
+        // Ensure the default visibility
+        $this->assertSame(Visibility::PERSONAL, $post->visibility);
+
+        $post->share();
+        $this->assertSame(Visibility::SHARED, $post->visibility);
+
+        $post->share(onlyToFriends: false);
+        $this->assertSame(Visibility::UNIVERSAL, $post->visibility);
+
+        $post->share(onlyToFriends: true);
+        $this->assertSame(Visibility::SHARED, $post->visibility);
+
+        $post->hide();
+        $this->assertSame(Visibility::PERSONAL, $post->visibility);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 1);
+        Event::assertDispatched(MicroblogPostUnshared::class, 1);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
+    }
+
+    public function test_post_status()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $post = factory(Post::class)->make();
+        $this->currentUser()->savePost($post);
+
+        // Ensure the default visibility and status
+        $this->assertSame(Status::PUBLISHED, $post->status);
+        $this->assertSame(Visibility::PERSONAL, $post->visibility);
+
+        $post->share();
+        $this->assertSame(Status::PUBLISHED, $post->status);
+        $this->assertSame(Visibility::SHARED, $post->visibility);
+
+        $post->share(onlyToFriends: false);
+        $this->assertSame(Status::PUBLISHED, $post->status);
+        $this->assertSame(Visibility::UNIVERSAL, $post->visibility);
+
+        $post->share(onlyToFriends: true);
+        $this->assertSame(Status::PUBLISHED, $post->status);
+        $this->assertSame(Visibility::SHARED, $post->visibility);
+
+        $post->hide();
+        $this->assertSame(Status::PUBLISHED, $post->status);
+        $this->assertSame(Visibility::PERSONAL, $post->visibility);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 1);
+        Event::assertDispatched(MicroblogPostUnshared::class, 1);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
+    }
+
+    public function test_post_publishing()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $post = factory(Post::class)->make();
+        $this->currentUser()->savePost($post);
+
+        // Ensure the default visibility and status
+        $this->assertSame(Status::PUBLISHED, $post->status);
+
+        $post->unpublish();
+        $this->assertSame(Status::DRAFT, $post->status);
+
+        $post->publish();
+        $this->assertSame(Status::PUBLISHED, $post->status);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
+    }
+    
     public function test_draft_blog_post_cannot_be_viewed_by_anyone_else()
     {
         $user = factory(User::class)->create();
@@ -162,7 +324,12 @@ class MicroblogPostBasicTest extends TestCase
         $post = Post::find($post->id);
 
         $this->assertNull($post);
-    }
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
+    }    
 
     public function test_get_posts_whereUserIdIs()
     {
@@ -181,6 +348,11 @@ class MicroblogPostBasicTest extends TestCase
 
         $posts = Post::whereUserIdIs($user2->id)->get();
         $this->assertCount(1, $posts); // User2 can't see user1's post
+
+        Event::assertDispatched(MicroblogPostCreated::class, 2);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_get_posts_whereUserIdIn()
@@ -209,7 +381,12 @@ class MicroblogPostBasicTest extends TestCase
         $post1->hide(); // hide from everyone except the author
         $posts = Post::whereUserIdIn([$user1->id, $user2->id])->get();
         $this->assertCount(1, $posts); // The count is 1 because user1's post is now hidden
-    }
+    
+        Event::assertDispatched(MicroblogPostCreated::class, 2);
+        Event::assertDispatched(MicroblogPostShared::class, 1);
+        Event::assertDispatched(MicroblogPostUnshared::class, 1);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
+}
 
     public function test_get_posts_whereJournalIdIs()
     {
@@ -222,6 +399,11 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereJournalIdIs($user->journalId())->get();
 
         $this->assertCount(1, $posts);
+    
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_get_posts_whereOlderThan()
@@ -236,6 +418,11 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereOlderThan($date)->get();
 
         $this->assertCount(1, $posts);
+    
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_get_posts_whereNewerThan()
@@ -250,6 +437,11 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereNewerThan($date)->get();
 
         $this->assertCount(1, $posts);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 1);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_get_posts_whereOlderThanPost()
@@ -268,6 +460,11 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereOlderThanPostId($post2->id)->get();
 
         $this->assertCount(1, $posts);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 2);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 
     public function test_get_posts_whereNewerThanPost()
@@ -286,5 +483,10 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereNewerThanPostId($post1->id)->get();
 
         $this->assertCount(1, $posts);
+
+        Event::assertDispatched(MicroblogPostCreated::class, 2);
+        Event::assertDispatched(MicroblogPostShared::class, 0);
+        Event::assertDispatched(MicroblogPostUnshared::class, 0);
+        Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
 }

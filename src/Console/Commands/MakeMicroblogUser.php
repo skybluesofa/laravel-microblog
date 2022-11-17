@@ -6,7 +6,6 @@ use App\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Skybluesofa\Microblog\Events\User\MicroblogUserCreated;
 
 class MakeMicroblogUser extends Command
 {
@@ -50,8 +49,6 @@ class MakeMicroblogUser extends Command
         $user->password = Hash::make($this->argument('password'));
         $user->email = $emailAddress;
         $user->save();
-
-        MicroblogUserCreated::dispatch($user);
 
         $this->info(self::USER_CREATED_SUCCESSFULLY);
 
