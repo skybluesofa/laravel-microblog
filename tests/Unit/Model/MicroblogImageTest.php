@@ -125,6 +125,33 @@ class MicroblogImageTest extends TestCase
         Event::assertDispatched(MicroblogImageUnshared::class, 0);
     }
 
+    public function test_journal_visibility()
+    {
+        $user = factory(User::class)->create();
+        $this->be($user);
+
+        $image = factory(Image::class)->make();
+        $user->saveImage($image);
+
+        $this->assertSame(Visibility::PERSONAL, $image->visibility);
+
+        $image->shareWithFriends();
+        $this->assertSame(Visibility::SHARED, $image->visibility);
+
+        $image->hide();
+        $this->assertSame(Visibility::PERSONAL, $image->visibility);
+
+
+        $image->shareWithFriends();
+        $image->shareWithEveryone();
+        $this->assertSame(Visibility::UNIVERSAL, $image->visibility);
+
+        Event::assertDispatched(MicroblogImageCreated::class, 1);
+        Event::assertDispatched(MicroblogImageDeleted::class, 0);
+        Event::assertDispatched(MicroblogImageShared::class, 2);
+        Event::assertDispatched(MicroblogImageUnshared::class, 1);
+    }
+
     public function test_image_belongs_to_current_user()
     {
         $user = factory(User::class)->create();

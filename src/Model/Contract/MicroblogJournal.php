@@ -72,18 +72,18 @@ class MicroblogJournal extends Model
 
     public function shareWithFriends(): self
     {
-        if ($this->belongsToCurrentUser()) {
-            $this->visibility = Visibility::SHARED;
-            $this->save();
-        }
-
-        return $this;
+        return $this->share();
     }
 
     public function shareWithEveryone(): self
     {
+        return $this->share(false);
+    }
+
+    public function share($onlyToFriends = true): self
+    {
         if ($this->belongsToCurrentUser()) {
-            $this->visibility = Visibility::UNIVERSAL;
+            $this->visibility = $onlyToFriends ? Visibility::SHARED : Visibility::UNIVERSAL;
             $this->save();
         }
 

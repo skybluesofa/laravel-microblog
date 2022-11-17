@@ -64,6 +64,16 @@ abstract class MicroblogImage extends Model
         return $this;
     }
 
+    public function shareWithFriends(): self
+    {
+        return $this->share();
+    }
+
+    public function shareWithEveryone(): self
+    {
+        return $this->share(false);
+    }
+
     public function share($onlyToFriends = true): self
     {
         if ($this->belongsToCurrentUser()) {
