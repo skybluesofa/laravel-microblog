@@ -3,12 +3,12 @@
 use App\User;
 use Skybluesofa\Microblog\Enums\Status;
 use Skybluesofa\Microblog\Enums\Visibility;
-use Skybluesofa\Microblog\Model\Post;
-use Skybluesofa\Microblog\Tests\Testcase;
 use Skybluesofa\Microblog\Events\Post\MicroblogPostCreated;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostDeleted;
 use Skybluesofa\Microblog\Events\Post\MicroblogPostShared;
 use Skybluesofa\Microblog\Events\Post\MicroblogPostUnshared;
-use Skybluesofa\Microblog\Events\Post\MicroblogPostDeleted;
+use Skybluesofa\Microblog\Model\Post;
+use Skybluesofa\Microblog\Tests\Testcase;
 
 class MicroblogPostFriendsTest extends TestCase
 {

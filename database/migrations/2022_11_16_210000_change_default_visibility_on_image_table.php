@@ -12,7 +12,7 @@ class ChangeDefaultVisibilityOnImageTable extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE ".config('microblog.tables.microblog_images')." CHANGE visibility visibility TINYINT UNSIGNED NOT NULL DEFAULT ".Visibility::PERSONAL.";");
+        DB::statement('ALTER TABLE '.config('microblog.tables.microblog_images').' CHANGE visibility visibility TINYINT UNSIGNED NOT NULL DEFAULT '.Visibility::PERSONAL.';');
     }
 
     public function down()
@@ -21,6 +21,6 @@ class ChangeDefaultVisibilityOnImageTable extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE ".config('microblog.tables.microblog_images')." CHANGE visibility visibility TINYINT UNSIGNED NOT NULL DEFAULT '".Visibility::UNIVERSAL."'");
+        DB::statement('ALTER TABLE '.config('microblog.tables.microblog_images')." CHANGE visibility visibility TINYINT UNSIGNED NOT NULL DEFAULT '".Visibility::UNIVERSAL."'");
     }
 }

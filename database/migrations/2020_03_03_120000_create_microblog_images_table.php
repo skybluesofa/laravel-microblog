@@ -25,7 +25,7 @@ class CreateMicroblogImagesTable extends Migration
                     (config('database.default') === 'testbench')
                         ? Visibility::PERSONAL
                         : Visibility::UNIVERSAL
-                    );
+                );
             $table->timestamps();
 
             $table->index(['id'], 'microblog_images_index');

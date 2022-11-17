@@ -35,7 +35,7 @@ class MicroblogImageTest extends TestCase
         $user->saveImage($image);
 
         $this->assertCount(1, Image::withoutGlobalScopes()->where('journal_id', $user->journalId())->pluck('id'));
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -57,7 +57,7 @@ class MicroblogImageTest extends TestCase
         $this->assertEquals($user->id, $imageUser->id);
 
         $this->assertEquals($user->name, $image->userName());
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -77,7 +77,7 @@ class MicroblogImageTest extends TestCase
         $image->delete();
 
         $this->assertCount(0, Image::withoutGlobalScopes()->where('journal_id', $user->journalId())->pluck('id'));
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 1);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -118,7 +118,7 @@ class MicroblogImageTest extends TestCase
         $this->assertCount(0, $personalImages);
         $this->assertCount(0, $sharedImages);
         $this->assertCount(1, $publicImages);
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 1);
@@ -141,7 +141,6 @@ class MicroblogImageTest extends TestCase
         $image->hide();
         $this->assertSame(Visibility::PERSONAL, $image->visibility);
 
-
         $image->shareWithFriends();
         $image->shareWithEveryone();
         $this->assertSame(Visibility::UNIVERSAL, $image->visibility);
@@ -161,7 +160,7 @@ class MicroblogImageTest extends TestCase
         $user->saveImage($image);
 
         $this->assertTrue($image->belongsToCurrentUser());
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -180,7 +179,7 @@ class MicroblogImageTest extends TestCase
         $this->be($user2);
 
         $this->assertFalse($image->belongsToCurrentUser());
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -204,7 +203,7 @@ class MicroblogImageTest extends TestCase
 
         $images = Image::whereUserIdIs($user2->id)->get();
         $this->assertCount(1, $images); // User2 can't see user1's images
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 2);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -257,7 +256,7 @@ class MicroblogImageTest extends TestCase
 
         $images = Image::whereJournalIdIs($user->journalId())->get();
         $this->assertCount(1, $images);
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -275,7 +274,7 @@ class MicroblogImageTest extends TestCase
         $date = new Carbon('+1 day');
         $images = Image::whereOlderThan($date)->get();
         $this->assertCount(1, $images);
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -293,7 +292,7 @@ class MicroblogImageTest extends TestCase
         $date = new Carbon('-1 day');
         $images = Image::whereNewerThan($date)->get();
         $this->assertCount(1, $images);
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 1);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -315,7 +314,7 @@ class MicroblogImageTest extends TestCase
 
         $images = Image::whereOlderThanImageId($image2->id)->get();
         $this->assertCount(1, $images);
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 2);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);
@@ -337,7 +336,7 @@ class MicroblogImageTest extends TestCase
 
         $images = Image::whereNewerThanImageId($image1->id)->get();
         $this->assertCount(1, $images);
-        
+
         Event::assertDispatched(MicroblogImageCreated::class, 2);
         Event::assertDispatched(MicroblogImageDeleted::class, 0);
         Event::assertDispatched(MicroblogImageShared::class, 0);

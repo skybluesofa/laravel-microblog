@@ -2,13 +2,13 @@
 
 use App\User;
 use Skybluesofa\Microblog\Enums\Visibility;
+use Skybluesofa\Microblog\Events\Journal\MicroblogJournalCreated;
+use Skybluesofa\Microblog\Events\Journal\MicroblogJournalShared;
+use Skybluesofa\Microblog\Events\Journal\MicroblogJournalUnshared;
 use Skybluesofa\Microblog\Model\Journal;
 use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
 use Skybluesofa\Microblog\Tests\Testcase;
-use Skybluesofa\Microblog\Events\Journal\MicroblogJournalCreated;
-use Skybluesofa\Microblog\Events\Journal\MicroblogJournalShared;
-use Skybluesofa\Microblog\Events\Journal\MicroblogJournalUnshared;
 
 class MicroblogJournalTest extends TestCase
 {

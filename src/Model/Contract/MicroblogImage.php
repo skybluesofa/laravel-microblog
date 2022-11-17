@@ -129,7 +129,7 @@ abstract class MicroblogImage extends Model
         }, 0);
 
         static::updated(function ($image) {
-            if (!$image->originalIsEquivalent('visibility')) {
+            if (! $image->originalIsEquivalent('visibility')) {
                 if ($image->visibility == Visibility::PERSONAL) {
                     MicroblogImageUnshared::dispatch($image);
                 } elseif ($image->getOriginal('visibility') == Visibility::PERSONAL) {

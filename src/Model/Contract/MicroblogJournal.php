@@ -140,7 +140,7 @@ class MicroblogJournal extends Model
         }, 0);
 
         static::updated(function ($journal) {
-            if (!$journal->originalIsEquivalent('visibility')) {
+            if (! $journal->originalIsEquivalent('visibility')) {
                 if ($journal->visibility == Visibility::PERSONAL) {
                     MicroblogJournalUnshared::dispatch($journal);
                 } elseif ($journal->getOriginal('visibility') == Visibility::PERSONAL) {

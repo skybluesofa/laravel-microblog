@@ -199,7 +199,7 @@ abstract class MicroblogPost extends Model
         }, 0);
 
         static::updated(function ($post) {
-            if (!$post->originalIsEquivalent('visibility')) {
+            if (! $post->originalIsEquivalent('visibility')) {
                 if ($post->visibility == Visibility::PERSONAL) {
                     MicroblogPostUnshared::dispatch($post);
                 } elseif ($post->getOriginal('visibility') == Visibility::PERSONAL) {

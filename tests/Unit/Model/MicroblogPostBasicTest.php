@@ -4,15 +4,15 @@ use App\User;
 use Carbon\Carbon;
 use Skybluesofa\Microblog\Enums\Status;
 use Skybluesofa\Microblog\Enums\Visibility;
-use Skybluesofa\Microblog\Model\Journal;
-use Skybluesofa\Microblog\Model\Post;
-use Skybluesofa\Microblog\Model\User as MicroblogUser;
-use Skybluesofa\Microblog\Tests\Testcase;
 use Skybluesofa\Microblog\Events\Post\MicroblogPostCreated;
+use Skybluesofa\Microblog\Events\Post\MicroblogPostDeleted;
 use Skybluesofa\Microblog\Events\Post\MicroblogPostShared;
 use Skybluesofa\Microblog\Events\Post\MicroblogPostUnshared;
-use Skybluesofa\Microblog\Events\Post\MicroblogPostDeleted;
+use Skybluesofa\Microblog\Model\Journal;
+use Skybluesofa\Microblog\Model\Post;
 use Skybluesofa\Microblog\Model\Traits\MicroblogCurrentUser;
+use Skybluesofa\Microblog\Model\User as MicroblogUser;
+use Skybluesofa\Microblog\Tests\Testcase;
 
 class MicroblogPostBasicTest extends TestCase
 {
@@ -51,7 +51,7 @@ class MicroblogPostBasicTest extends TestCase
         Event::assertDispatched(MicroblogPostUnshared::class, 0);
         Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
-    
+
     public function test_user_can_create_a_new_blog_post()
     {
         $user = factory(User::class)->create();
@@ -306,7 +306,7 @@ class MicroblogPostBasicTest extends TestCase
         Event::assertDispatched(MicroblogPostUnshared::class, 0);
         Event::assertDispatched(MicroblogPostDeleted::class, 0);
     }
-    
+
     public function test_draft_blog_post_cannot_be_viewed_by_anyone_else()
     {
         $user = factory(User::class)->create();
@@ -329,7 +329,7 @@ class MicroblogPostBasicTest extends TestCase
         Event::assertDispatched(MicroblogPostShared::class, 0);
         Event::assertDispatched(MicroblogPostUnshared::class, 0);
         Event::assertDispatched(MicroblogPostDeleted::class, 0);
-    }    
+    }
 
     public function test_get_posts_whereUserIdIs()
     {
@@ -381,12 +381,12 @@ class MicroblogPostBasicTest extends TestCase
         $post1->hide(); // hide from everyone except the author
         $posts = Post::whereUserIdIn([$user1->id, $user2->id])->get();
         $this->assertCount(1, $posts); // The count is 1 because user1's post is now hidden
-    
+
         Event::assertDispatched(MicroblogPostCreated::class, 2);
         Event::assertDispatched(MicroblogPostShared::class, 1);
         Event::assertDispatched(MicroblogPostUnshared::class, 1);
         Event::assertDispatched(MicroblogPostDeleted::class, 0);
-}
+    }
 
     public function test_get_posts_whereJournalIdIs()
     {
@@ -399,7 +399,7 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereJournalIdIs($user->journalId())->get();
 
         $this->assertCount(1, $posts);
-    
+
         Event::assertDispatched(MicroblogPostCreated::class, 1);
         Event::assertDispatched(MicroblogPostShared::class, 0);
         Event::assertDispatched(MicroblogPostUnshared::class, 0);
@@ -418,7 +418,7 @@ class MicroblogPostBasicTest extends TestCase
         $posts = Post::whereOlderThan($date)->get();
 
         $this->assertCount(1, $posts);
-    
+
         Event::assertDispatched(MicroblogPostCreated::class, 1);
         Event::assertDispatched(MicroblogPostShared::class, 0);
         Event::assertDispatched(MicroblogPostUnshared::class, 0);
